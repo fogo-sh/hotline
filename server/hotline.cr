@@ -46,7 +46,7 @@ class Client < Connection
 
   def handle_message(message)
     messages << message
-    Log.info { "Admin message ##{messages.size} from #{@uuid}: #{message}" }
+    Log.info { "Client message ##{messages.size} from #{@uuid}: #{message}" }
   end
 
   def handle_close()
@@ -88,4 +88,4 @@ ws "/admin" do |socket, context|
   admin = Admin.new(socket, context)
 end
 
-Kemal.run
+Kemal.run(4000)
