@@ -1,0 +1,10 @@
+name: hotline
+version: 1.0.0
+
+dependencies:
+  kemal:
+    github: kemalcr/kemal
+
+targets:
+  server:
+    main: hotline.cr
