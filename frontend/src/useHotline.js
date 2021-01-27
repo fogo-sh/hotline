@@ -2,20 +2,31 @@ import { useRef, useState, useEffect } from "react";
 
 let messageId = 0;
 
+export const messageTypes = Object.freeze({
+  sent: "SENT",
+  received: "RECEIVED",
+});
+
 export default function useHotline(endpoint) {
   const ws = useRef(null);
 
   const [opened, setOpened] = useState(false);
   const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState("");
 
-  const appendMessage = ({ ours, message }) => {
+  const appendMessage = (message, type) => {
     messageId++;
-    setMessages((prev) => [...prev, { key: messageId, ours, message }]);
+    setMessages((prev) => [...prev, { key: messageId, message, type }]);
+  };
+
+  const sendMessage = (message) => {
+    if (opened) {
+      ws.current.send(message);
+      appendMessage(message, messageTypes.sent);
+    }
   };
 
   useEffect(() => {
-    ws.current = new WebSocket("ws://localhost:2015/ws");
+    ws.current = new WebSocket(endpoint);
 
     window.ws = ws.current;
 
@@ -23,26 +34,15 @@ export default function useHotline(endpoint) {
     ws.current.onclose = () => setOpened(false);
 
     ws.current.onmessage = (message) => {
-      appendMessage({ ours: false, message });
+      appendMessage(message, messageTypes.received);
     };
 
     return () => ws.current.close();
-  }, []);
-
-  const onInputChange = (e) => setInput(e.target.value);
-  const onInputKeyPress = (e) => {
-    if (opened && e.key === "Enter") {
-      ws.current.send(input);
-      appendMessage({ ours: true, message: input });
-      setInput("");
-    }
-  };
+  }, [endpoint]);
 
   return {
     opened,
     messages,
-    input,
-    onInputChange,
-    onInputKeyPress,
+    sendMessage,
   };
 }

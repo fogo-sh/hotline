@@ -1,30 +1,31 @@
-import React, { useEffect } from "react";
+import React from "react";
 
-import useHotline from "./useHotline";
+import useHotline, { messageTypes } from "./useHotline";
+import useChatInput from "./useChatInput";
 
 import "./App.css";
 
-function App() {
-  const {
-    opened,
-    messages,
-    input,
-    onInputChange,
-    onInputKeyPress,
-  } = useHotline("ws://localhost:2015/ws");
+const ENDPOINT = "ws://localhost:2015/ws";
 
-  useEffect(() => {
-    console.log({ opened });
-  }, [opened]);
+function App() {
+  const { opened, messages, sendMessage } = useHotline(ENDPOINT);
+  const { input, onInputChange, onInputKeyPress } = useChatInput(sendMessage);
+
+  const renderMessage = ({ key, type, message }) => {
+    switch (type) {
+      case messageTypes.sent:
+        return <p key={key}>{message}</p>;
+      case messageTypes.received:
+        return <p key={key}>{message}</p>;
+      default:
+        throw new Error(`unknown type: ${type}`);
+    }
+  };
 
   return (
     <div className="App">
       <div className="ChatBox">
-        <pre className="ChatOutput">
-          {messages.map(({ key, ours, message }) => (
-            <p key={key}>{message}</p>
-          ))}
-        </pre>
+        <div className="ChatOutput">{messages.map(renderMessage)}</div>
         <input
           className="ChatInput"
           disabled={!opened}
