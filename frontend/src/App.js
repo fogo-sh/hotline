@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useRef, useEffect } from "react";
 
 import useHotline, { messageTypes } from "./useHotline";
 import useChatInput from "./useChatInput";
+import Admin from "./admin/Admin";
 
 import "./App.css";
 
@@ -10,6 +11,11 @@ const ENDPOINT = "ws://localhost:2015/ws";
 function App() {
   const { opened, messages, sendMessage } = useHotline(ENDPOINT);
   const { input, onInputChange, onInputKeyPress } = useChatInput(sendMessage);
+
+  const lastMessage = useRef();
+  useEffect(() => {
+    lastMessage.current?.scrollIntoView({ behaviour: "smooth" });
+  });
 
   const renderMessage = ({ key, type, message }) => {
     switch (type) {
@@ -24,8 +30,12 @@ function App() {
 
   return (
     <div className="App">
+      <Admin />
       <div className="ChatBox">
-        <div className="ChatOutput">{messages.map(renderMessage)}</div>
+        <div className="ChatOutput">
+          {messages.map(renderMessage)}
+          <div ref={lastMessage} />
+        </div>
         <input
           className="ChatInput"
           disabled={!opened}
