@@ -1,15 +1,20 @@
 import React, { useRef, useEffect } from "react";
 
-import useHotline, { messageTypes } from "./useHotline";
+import { messageTypes } from "./consts";
+import useHotlineClient from "./useHotlineClient";
 import useChatInput from "./useChatInput";
+import useWebsocket from "./useWebsocket";
+
 import Admin from "./admin/Admin";
 
 import "./App.css";
 
-const ENDPOINT = "ws://localhost:2015/ws";
+const CLIENT_ENDPOINT = "ws://localhost:2015/ws";
 
 function App() {
-  const { opened, messages, sendMessage } = useHotline(ENDPOINT);
+  const { ws: clientWs, open: clientWsOpen } = useWebsocket(CLIENT_ENDPOINT);
+  const { messages, sendMessage } = useHotlineClient(clientWs);
+
   const { input, onInputChange, onInputKeyPress } = useChatInput(sendMessage);
 
   const lastMessage = useRef();
@@ -38,7 +43,7 @@ function App() {
         </div>
         <input
           className="ChatInput"
-          disabled={!opened}
+          disabled={!clientWsOpen}
           value={input}
           onChange={onInputChange}
           onKeyPress={onInputKeyPress}
